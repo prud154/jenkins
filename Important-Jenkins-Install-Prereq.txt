@@ -1,0 +1,29 @@
+Master, Slaves should have 15GB EBS Volume. 
+Jenkins Pre-Req:
+1. Java 11
+2. Maven, jq, unzip, net-tools
+3. Docker && usermod -a -G docker ubuntu
+4. Terraform
+5. Packer
+6. Ansible
+7. Create ansibleadmin user
+8. AWS CLI 2.0
+9. Trivy Scanner
+   wget https://github.com/aquasecurity/trivy/releases/download/v0.42.0/trivy_0.42.0_Linux-64bit.deb
+   sudo dpkg -i trivy_0.42.0_Linux-64bit.deb
+
+Plugins for Jenkins:
+1. AWS Steps Plugin
+2. Docker Plugin
+3. SonarQube Scanner Version 2.15 and configure it in Jenins Configure System.
+4. Sonarqube qualitygate
+5. Blue Ocean
+6. Multibranch Scan Webhook Trigger
+7. Slack Notification
+8. Ansible
+
+Following Jenkins Credentials also need to be created:
+ubuntu (slave-credentials)
+jenkins (GitHubAccess)
+sonarqubeadmintoken
+Assign S3 Full Access Role to both Dev and Prod Jenkins Slaves

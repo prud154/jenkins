@@ -1,0 +1,62 @@
+/*Jenkins File For Declarative Syntax for CI/CD of Git Packer Terraform */
+pipeline {
+    agent any
+
+    stages {
+        stage('Clone Git Repo') {
+            steps {
+                sh 'rm -rf terraformsingleinstance'
+                sh 'git clone -b engdevopsb06gitpackterr https://github.com/mavrick202/terraformsingleinstance.git'
+                sh 'ls -al'
+            }
+        }
+        stage('Perform Backer Build') {
+            when {
+                    expression {
+                        env.BRANCH_NAME == 'engdevopsb06gitpackterr'
+                    }
+                }
+            steps {
+                dir('terraformsingleinstance') {
+                    sh 'pwd'
+                    sh 'packer build -var-file packer-vars.json packer.json | tee output.txt'
+                    sh "tail -2 output.txt | head -2 | awk 'match(\$0, /ami-.*/) { print substr(\$0, RSTART, RLENGTH) }' > ami.txt"
+                    sh "echo \$(cat ami.txt) > ami.txt"
+                    script {
+                        def AMIID = readFile('ami.txt').trim()
+                        sh "echo variable \\\"imagename\\\" { default = \\\"$AMIID\\\" } >> variables.tf"
+                    }
+                }
+            }
+        }
+        stage('Terraform Plan') {
+            steps {
+                dir('terraformsingleinstance') {
+                    sh 'terraform init'
+                    sh 'terraform plan'
+                }
+            }
+        }
+        stage('Terraform Apply') {
+            steps {
+                dir('terraformsingleinstance') {
+                    sh 'terraform init'
+                    sh 'terraform apply --auto-approve'
+                }
+            }
+        }
+        stage('Terraform Destroy') {
+            when {
+                    expression {
+                        params.DESTROY == 'YES'
+                    }
+                }
+            steps {
+                dir('terraformsingleinstance') {
+                    sh 'terraform init'
+                    sh 'terraform apply --auto-approve'
+                }
+            }
+        }
+    }
+}
