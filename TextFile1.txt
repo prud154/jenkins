@@ -1,0 +1,99 @@
+Java - Maven Build Tool                Node Js
+----------------------                 ------- 
+pom.xml                               package.json -  Node Modules
+
+mvn clean package                     npm install
+
+pom.xml - SOnarQube                    sonar-project.js
+
+mvn clean sonar:sonar                  npm run sonar (OR) node sonar-project.js
+
+node_modules
+
+pom.xml --> nexus repos                 package.json --> nexus repos
+
+settings.xml --> nexus credentilas      .npmrc --> nexus credentials -- base64 
+
+mvn deploy                               npm publish
+
+node{
+
+  stage('Checkout Code')
+  {
+   git credentialsId: '', url: ''
+  }
+  
+  stage('Build')
+  {
+  nodejs(nodeJSInstallationName: 'nodejs16.7.0'){
+  sh "npm install"
+  }
+  }
+  
+  stage('SonarQubeReportExecution')
+  {
+  nodejs(nodeJSInstallationName: 'nodejs16.7.0'){
+  sh "npm run sonar"
+  }
+  }
+  
+   stage('UploadArtifactintoNexus')
+   {
+   sh 'npm publish'
+   }
+  
+  
+   stage('RunTheNodeJsApp')
+   {
+    sh 'node app.js'
+   }
+  
+}
+
+
+
+
+
+echo -n 'admin:admin123' | openssl base64
+
+
+npm login --registry=http://13.233.36.149:8081/repository/nodejs-repo/
+
+
+
+Shared Libs
+------------
+
+
+@Library('msssharedlibs') _
+
+pipeline{
+    
+    agent any
+	
+	tools{
+	 maven 'maven3.8.2'
+	}
+    
+    stages{
+        
+        stage('CheckOutCode'){
+            
+            steps{
+                
+                git branch: 'development', credentialsId: '', url: ''
+            }
+        }
+		
+		stage('Build'){
+		 steps{
+		  stages("Build")
+		 }
+		}
+		stage('Execute SOanrQube Report'){
+		 steps{
+		  stages("SonarQube Report")
+		 }
+		}
+    }
+}
